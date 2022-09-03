@@ -58,11 +58,9 @@ def CheckDir():
         if os.path.isdir(Dir):
             print(f"Directory exists, curent directory => {Dir}")
             Directory = Dir
-            Dir.close()
         else:
             print('Current directory does not exist')
             Mkdir()
-            Dir.close()
     elif not os.path.exists("Dir.txt"):
         print("No directory saved")
         Mkdir()
@@ -84,13 +82,13 @@ def SearchCmd():
 def ChangeImage(is_64_, Cy_time, ImList):
     global flag
     while flag != "s": 
-            Image = random.choice(ImList)
-            if is_64_:
-                ctypes.windll.user32.SystemParametersInfoW(20, 0, Image, 3)
-            else:
-                ctypes.windll.user32.SystemParametersInfoA(20, 0, Image, 3)
-            print(f'current image is {Image}, enter "s" to stop anytime')
-            time.sleep(Cy_time)
+        Image = random.choice(ImList)
+        if is_64_:
+            ctypes.windll.user32.SystemParametersInfoW(20, 0, Image, 3)
+        else:
+            ctypes.windll.user32.SystemParametersInfoA(20, 0, Image, 3)
+        print(f'current image is {Image}, enter "s" to stop anytime')
+        time.sleep(Cy_time)
             
 def CheckInput():
     global flag
