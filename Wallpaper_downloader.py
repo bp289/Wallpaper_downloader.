@@ -1,12 +1,14 @@
-import requests
-import string
-import random
-import os
-import sys
+from requests import get
+from string import ascii_lowercase
+from random import choice
+from os import path
+from os import listdir
+from sys import exit
+from struct import calcsize
+from threading import Thread 
 import ctypes
-import struct
 import time
-import threading
+
 
 #global variables
 Directory = ""
@@ -15,23 +17,23 @@ flag = ""
 #functions
 def DownloadImage(ImageUrl, Path):
     print("the current path is" + Path)
-    rData = requests.get(ImageUrl) 
+    rData = get(ImageUrl) 
     ID = generateName()
-    Ext = os.path.splitext(ImageUrl)[1] # gets the extension of the image bec ause os.path.splitext returns ('url" , 'extension')
+    Ext = path.splitext(ImageUrl)[1] # gets the extension of the image bec ause os.path.splitext returns ('url" , 'extension')
     FilePath = f"{Path}{ID}{Ext}"
-    open(FilePath, "wb").write(rData.content)
+    open(FilePath, "wb").write(rData.content) 
 
 def generateName():
-    letters = string.ascii_lowercase
+    letters = ascii_lowercase
     result = 'Wallpaper_'
     for i in range(8):
-        result += random.choice(letters)
+        result += choice(letters)
     
     return result
 
 def WallpaperSearh(SearchQuery):
     url =  f"https://wallhaven.cc/api/v1/search?q={SearchQuery}"
-    rData = requests.get(url) #grabs the REST api data with a get request.
+    rData = get(url) #grabs the REST api data with a get request.
     JsonData = rData.json() # returns a json object of the result.
     downloadLinks = []
     for item in JsonData["data"]: # for each wallpaper(object) in the 'data' list 
@@ -42,8 +44,8 @@ def WallpaperSearh(SearchQuery):
 def Mkdir():
     DirInput = input("Please enter a directory to store wallpapers e.g E:\WallpaperDownloads: ")
     DirInput = f"{DirInput}\\"
-    if not os.path.isdir(DirInput):
-        sys.exit("Directory must exist")
+    if not path.isdir(DirInput):
+        exit("Directory must exist")
     else:
         DirFile = open("Dir.txt", "w")
         DirFile.write(DirInput)
@@ -52,16 +54,16 @@ def Mkdir():
 
 def CheckDir():
     global Directory
-    if os.path.exists("Dir.txt"):
+    if path.exists("Dir.txt"):
         DirFile = open("Dir.txt", "r")
         Dir = DirFile.read()
-        if os.path.isdir(Dir):
+        if path.isdir(Dir):
             print(f"Directory exists, curent directory => {Dir}")
             Directory = Dir
         else:
             print('Current directory does not exist')
             Mkdir()
-    elif not os.path.exists("Dir.txt"):
+    elif not path.exists("Dir.txt"):
         print("No directory saved")
         Mkdir()
         
@@ -82,7 +84,7 @@ def SearchCmd():
 def ChangeImage(is_64_, Cy_time, ImList):
     global flag
     while flag != "s": 
-        Image = random.choice(ImList)
+        Image = choice(ImList)
         if is_64_:
             ctypes.windll.user32.SystemParametersInfoW(20, 0, Image, 3)
         else:
@@ -96,33 +98,45 @@ def CheckInput():
                 
 def CycleWallpaper():
     global Directory
-    ImageList = os.listdir(Directory)
+    ImageList = listdir(Directory)
     
     Cycle_time = input('How long between image change? (enter time in minutes): ')
     if not Cycle_time.isnumeric():
-        sys.exit('please enter a numerical value')
+        print('please enter a numerical value')
+        return
     
     
     def is_64_bit():
-        return struct.calcsize('P') * 8 == 64
+        return calcsize('P') * 8 == 64
 
     t1.start(is_64_bit(), Cycle_time, ImageList)
     t2.start()
 
+def AskInput():
+    cmd = input('Please enter a command ("search"/"wallpaper_cycle"/"change_directory"/"exit"): ')
+    if cmd == 'search':
+        CheckDir()
+        SearchCmd()
+        AskInput()
+    elif cmd == 'wallpaper_cycle':
+        CheckDir()
+        CycleWallpaper()
+        AskInput()
+    elif cmd == 'change_directory':
+        CheckDir()
+        Mkdir()
+        AskInput()
+    elif cmd == 'exit':
+        exit("GoodBie :)")
+    
 #threads
-t1 = threading.Thread(target=ChangeImage)  
-t2 = threading.Thread(target=CheckInput) 
-#main
+t1 = Thread(target=ChangeImage)  
+t2 = Thread(target=CheckInput) 
+AskInput()
 print('Welcome to this wallpaper script, powered by the wallhave.cc api')
-CheckDir()
-cmd = input('Please enter a command ("search"/"wallpaper_cycle"/"change_directory"): ')
-if cmd == 'search':
-    SearchCmd()
-elif cmd == 'wallpaper_cycle':
-    CycleWallpaper()
-elif cmd == 'change_directory':
-    Mkdir()
-    CheckDir()
+
+
+
     
     
 
