@@ -4,7 +4,7 @@ from random import choice
 from os import path
 from os import listdir
 from sys import exit
-from struct import calcsize
+from platform import architecture
 from threading import Thread 
 import ctypes
 import time
@@ -25,7 +25,7 @@ class DirInfo:
             DirFile = open("Dir.txt", "r")
             Dir = DirFile.read()
             if path.isdir(Dir):
-                print(f"Directory exists, curent directory => {Dir}")
+                print(f"Directory exists, current directory => {Dir}")
                 self.Directory = Dir
             else:
                 print('Current directory does not exist')
@@ -91,16 +91,22 @@ class WallpaperChange:
     
     @staticmethod
     def is_64_bit():
-            return calcsize('P') * 8 == 64
+        if architecture()[0] == '64bit':
+            return True
+        else:
+            return False
+
               
     def ChangeImage(self):
         while self.flag != "s": 
-            Image = f'choice(self.ImageList)'
-            
-            if self.is_64_:
-                ctypes.windll.user32.SystemParametersInfoW(20, 0, Image, 3)
+            Image = choice(self.ImageList)
+            Path = f'{self.Directory}\\{Image}'
+            if self.is_64_ == True:
+                print("is 64bit Windows")
+                ctypes.windll.user32.SystemParametersInfoW(20, 0, Path, 3)
             else:
-                ctypes.windll.user32.SystemParametersInfoA(20, 0, Image, 3)
+                print("is 32bit Windows")
+                ctypes.windll.user32.SystemParametersInfoA(20, 0, Path, 3)
                 
             print(f'current image is {Image}, enter "s" to stop anytime')
             time.sleep(self.cycleTime)
@@ -128,7 +134,7 @@ class Main:
     
     @staticmethod
     def GetSearchInput():
-        SearchInput = input('Enter a search query e.g landscape (incude "_" for spaces e.g cute_dogs, only one space afer each word): ')
+        SearchInput = input('Enter a search query e.g landscape (incude "_" for spaces e.g cute_dogs, only one space after each word): ')
         SearchInput.replace(' ','+')
         return SearchInput
     
@@ -139,7 +145,6 @@ class Main:
             exit('please enter a numerical value')
         else:
             Cycle_time = int(Cycle_time) * 60
-            print(Cycle_time)
             return Cycle_time
             
     def AskCmd(self): 
@@ -157,11 +162,11 @@ class Main:
             if  HasFiles == False:
                 print('directory does not contain image files')
                 self.AskCmd()
-            print("cycling images in directory: " + self.DirInfo.Directory)
-            
-            wallCycle = WallpaperChange(ImageList, self.GetCycleTime(), self.DirInfo.Directory)
-            wallCycle.CycleWallpaper()
-            self.AskCmd() 
+            else:
+                print("cycling images in directory: " + self.DirInfo.Directory)
+                wallCycle = WallpaperChange(ImageList, self.GetCycleTime(), self.DirInfo.Directory)
+                wallCycle.CycleWallpaper()
+                self.AskCmd() 
         elif cmd == 'change_directory':
             self.DirInfo.GetDir()
             self.DirInfo.Mkdir()
